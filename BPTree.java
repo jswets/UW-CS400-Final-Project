@@ -43,6 +43,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
         }
         
         this.branchingFactor = branchingFactor;
+        root = new LeafNode();
     }
     
     
@@ -52,26 +53,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
      */
     @Override
     public void insert(K key, V value) {
-        /**
-         * If the root is null,
-    create a new 2-node with this key
-Else
-    find the leaf where the insertion goes
-    If leaf is a 2-node, make it into a 3-node 
-    If leaf is a 3-node
-        find the middle value and propagate it up
-        split the current node into two 2-nodes with smallest and largest
-
-//Check the parent
-If it is too large, push the propagation up the tree
-
-If the propagation goes up to the root
-    create a new 2-node with the propagated value
-
-         */
-      if (root == null) {
-        Node node = new LeafNode();
-      }
+      root.insert(key, value);
     }
     
     
@@ -85,8 +67,8 @@ If the propagation goes up to the root
             !comparator.contentEquals("==") && 
             !comparator.contentEquals("<=") )
             return new ArrayList<V>();
-        // TODO : Complete
-        return null;
+        
+        return root.rangeSearch(key, comparator);
     }
     
     
