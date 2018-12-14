@@ -28,18 +28,14 @@ public class FoodData implements FoodDataADT<FoodItem> {
     // BPTree for food ID index
     private BPTree<String, FoodItem> foodIDIx;
     
-    // BPTree for food name index
-    private BPTree<String, FoodItem> foodNameIx;
-    
     /**
      * Public constructor
      */
     public FoodData() {
     	foodItemList = new ArrayList<FoodItem>();
     	    	
-    	int BPTreeBranchFactor = 1;
+    	int BPTreeBranchFactor = 11;
     	foodIDIx = new BPTree<String, FoodItem>(BPTreeBranchFactor);
-    	foodNameIx = new BPTree<String, FoodItem>(BPTreeBranchFactor);
     	
     	indexes = new HashMap<String,BPTree<Double, FoodItem>>();
     	for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
@@ -118,9 +114,10 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void addFoodItem(FoodItem foodItem) {
+    	if(foodItem == null) {return;}
+    	
     	// need to add foodItem to all of the relevant BPTrees (name, ID, nutrient indexes)
     	foodIDIx.insert(foodItem.getID(), foodItem);
-    	foodNameIx.insert(foodItem.getName(), foodItem);
     	
     	HashMap<String, Double> foodNutrients = foodItem.getNutrients();
     	
@@ -130,6 +127,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
     			indexes.get(nutrient.toString()).insert(foodNutrients.get(nutrient.toString()), foodItem);
     		}
         }
+        
+        foodItemList.add(foodItem);
     }
 
 	@Override
@@ -203,6 +202,19 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	
 	/*
      * (non-Javadoc)
+     * @see skeleton.FoodDataADT#getAllFoodItems()
+     */
+    @Override
+    public List<FoodItem> getAllFoodItems() {
+    	List<FoodItem> retFoods = foodItemList.stream()
+    			.sorted((food1, food2) -> food1.getName().compareTo(food2.getName()))
+				.collect(Collectors.toList());
+    	foodItemList = retFoods;
+        return foodItemList;
+    }
+	
+	/*
+     * (non-Javadoc)
      * @see skeleton.FoodDataADT#filterByName(java.lang.String)
      */
     @Override
@@ -220,21 +232,6 @@ public class FoodData implements FoodDataADT<FoodItem> {
         // TODO : Complete
         return null;
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see skeleton.FoodDataADT#getAllFoodItems()
-     */
-    @Override
-    public List<FoodItem> getAllFoodItems() {
-        // TODO : Complete
-    	
-    	// Thinking we want this to be an alphabetized list of the foods
-    	// that we can use for display (i.e. use foodItem name index BPTree
-    	// to generate this list from a level order traversal of the leaves).
-    	
-        return null;
-    }
 	
 	
 	
@@ -245,7 +242,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	public static void main(String[] args) {
 		FoodData testFoodDataObj = new FoodData();
 		
-		String filePath = new String("foodItems.txt");
+		String filePath = new String("foodItems.csv");
 		testFoodDataObj.loadFoodItems(filePath);
 	}
 }
