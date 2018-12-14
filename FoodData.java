@@ -51,8 +51,12 @@ public class FoodData implements FoodDataADT<FoodItem> {
     @Override
     public void loadFoodItems(String filePath) {
     	if(filePath.equals(null) || filePath.equals("")) {return;}
-		try (Stream<String> fileStream = Files.lines(Paths.get(filePath))) {
+    	
+    	Stream<String> fileStream = null;
+    	
+		try {
 			List<String> fileLineList = new ArrayList<String>();
+			fileStream = Files.lines(Paths.get(filePath));
 			fileLineList = fileStream.collect(Collectors.toList());
 			
 			for(String dataLine : fileLineList) {
@@ -101,10 +105,17 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					// add food item
 					addFoodItem(foodItemObj);
 					
-				} catch(Exception e) {}
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			if(fileStream != null) {
+				fileStream.close();
+			}
 		}
     }
 
@@ -242,7 +253,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	public static void main(String[] args) {
 		FoodData testFoodDataObj = new FoodData();
 		
-		String filePath = new String("foodItems.csv");
+		String filePath = new String("foodItemsShort.csv");
 		testFoodDataObj.loadFoodItems(filePath);
 	}
 }
