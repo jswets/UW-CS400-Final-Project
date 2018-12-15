@@ -202,6 +202,21 @@ public class Main extends Application {
 					carbohydratesColumn, proteinColumn, fiberColumn);
 
 			mealTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
+			
+			
+			addFoodToMeal.setOnAction(a -> {
+				int selectedIdx = foodTable.getSelectionModel().getSelectedIndex();
+				mealTable.getItems().add(selectedIdx);
+			});
+			
+			
+			removeFoodFromMeal.setOnAction(a -> {
+				int selectedIdx = foodTable.getSelectionModel().getSelectedIndex();
+				mealTable.getItems().remove(selectedIdx);
+			});
+			
+			
+			
 
 			vBox.getChildren().addAll(availableFoodsLabel,foodTable, buttonPane, mealLabel, mealTable);
 			vBox.setPadding(new Insets(10, 0, 0, 10));
