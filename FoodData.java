@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,7 +108,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					addFoodItem(foodItemObj);
 					
 				} catch(Exception e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 		} catch (IOException e) {
@@ -230,20 +232,97 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> filterByName(String substring) {
-        // TODO : Complete
-        return null;
+        List<FoodItem> ret = new ArrayList<FoodItem>();
+        if(substring == null) {return ret;}
+        
+        // iterate through all foods in foodItemList
+        for(FoodItem food : foodItemList) {
+        	if(food == null) {continue;}
+        	
+        	if(food.getName().toLowerCase().contains(substring.toLowerCase())) {
+        		ret.add(food);
+        	}
+        }
+        
+        return ret;
     }
-
+ 
     /*
      * (non-Javadoc)
      * @see skeleton.FoodDataADT#filterByNutrients(java.util.List)
      */
     @Override
     public List<FoodItem> filterByNutrients(List<String> rules) {
-        // TODO : Complete
-        return null;
+    	List<FoodItem> ret = new ArrayList<FoodItem>();
+    	if(rules == null) {return ret;}
+    	
+    	HashSet<FoodItem> rulePassFoodItems = new HashSet<FoodItem>(getAllFoodItems());
+    	
+    	for(String currentRule : rules) {
+    		if(currentRule == null) {continue;}
+    		
+    		String nutrientName = null;
+    		String comparator = null;
+    		Double nutrientVal = null;
+    		
+    		String del = " ";
+			String[] currentRulePcs = currentRule.split(del);
+			
+			// rule format: <nutrient> <comparator> <value>
+	    	// 0 - <nutrient> - name of one of the 5 nutrients (calories,carbs,fat,protein,fiber) [CASE-INSENSITIVE]
+	    	// 1 - <comparator> - One of the following comparison operators: <=, >=, ==
+	    	// 2 - <value> - a double value
+			
+			// rule must follow above format
+			if (currentRulePcs.length != 2) {continue;}
+    		
+			// rule must be for valid nutrient
+    		boolean isValidNutrient = false;
+	        for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
+	    		if(nutrient.toString().equals(currentRulePcs[0].toLowerCase())) {
+	    			isValidNutrient = true;
+	    			nutrientName = currentRulePcs[0].toLowerCase();
+	    			break;
+	    		}
+	        }
+	        if(!isValidNutrient) {continue;}
+	        
+	        // comparator must be valid
+	        String [] comparators = {"==","<=",">="};
+	        boolean isValidComparator = false;
+	        for(String currentComp : comparators) {
+	        	if(currentComp.equals(currentRulePcs[1])) {
+	        		comparator = currentRulePcs[1];
+	        		isValidComparator = true;
+	        		break;
+	        	}
+	        }
+	        if(!isValidComparator) {continue;}
+	        
+	        // value must be valid
+	        try {
+	        	nutrientVal = Double.parseDouble(currentRulePcs[2]);
+	        } catch(Exception e) {continue;}
+	        
+	        // all values must exist
+	        if((nutrientName == null) || (comparator == null) || (nutrientVal == null)) {
+	        	continue;
+	        }
+	        
+	        
+	        // at this point, all pieces of the rule are valid
+	        // get list of foodItems that qualify for the filter
+	        rulePassFoodItems.retainAll(indexes.get(nutrientName).rangeSearch(nutrientVal, comparator));
+	        
+	        // short circuit
+	        if(rulePassFoodItems.isEmpty()) {return ret;}
+    	}
+    	
+    	if(rulePassFoodItems.isEmpty()) {return ret;}
+    	
+    	ret.addAll(rulePassFoodItems);
+        return ret;
     }
-	
 	
 	
 	
