@@ -277,7 +277,7 @@ public class Main extends Application {
 			ArrayList<String> nutrientFilterList = new ArrayList<String>(); 
 
 			addNutrientFilterButton.setOnAction(a -> {
-				if (!addNutrientFilterButton.getText().equals("")){
+				if (isValidNutrientFilter(nutrientFilterInputBox.getText())){
 					String nutrientFilter = nutrientFilterInputBox.getText();
 					filtersList.getItems().add(nutrientFilter);
 					nutrientFilterList.add(nutrientFilter);
@@ -316,6 +316,56 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}//start
+	
+	/**
+	 * Evaluates one nutrient filter string to determine if it is valid
+	 * @param S - string representing the nutrient filter
+	 * @return true if filter string is valid, false otherwise
+	 */
+	private boolean isValidNutrientFilter(String S) {
+		if (S == null) return false;
+		
+		String del = " ";
+		
+		String[] FilterPcs = S.split(del);
+		if (FilterPcs.length != 3) return false;
+		
+		//check that nutrient name is valid
+		String nutrientName = FilterPcs[0];
+		boolean isValidNutrient = false;
+        for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
+    		if(nutrient.toString().equals(FilterPcs[0].toLowerCase())) {
+    			isValidNutrient = true;
+    			nutrientName = FilterPcs[0].toLowerCase();
+    			break;
+    		}
+        }
+        if(!isValidNutrient) {return false;}
+		
+		//check that comparator is valid
+		String comparator = FilterPcs[1];
+		String [] comparators = {"==","<=",">="};
+        boolean isValidComparator = false;
+        for(String currentComp : comparators) {
+        	if(currentComp.equals(FilterPcs[1])) {
+        		comparator = FilterPcs[1];
+        		isValidComparator = true;
+        		break;
+        	}
+        }
+        if(!isValidComparator) {return false;}
+		
+		//check that value is valid
+		try {
+			Double nutrientVal = Double.parseDouble(FilterPcs[2]);
+			if (nutrientVal < 0.0d) return false;
+		} catch (Exception E) {
+			return false;
+		}
+		
+		// all checks passed
+		return true;
 	}
 
 	private void createFoodItem(String ID, String name, String calories,
