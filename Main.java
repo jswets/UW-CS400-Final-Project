@@ -1,5 +1,6 @@
 package application;
 
+
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.ArrayList;
@@ -48,17 +49,23 @@ import javafx.util.StringConverter;
 public class Main extends Application {
 	private FoodData food;
 	private String oldNameFilter;
+	private ArrayList<FoodItem> mealList = new ArrayList<FoodItem>();
 	private TableView<FoodItem> foodTable;
 	private ObservableList<FoodItem> obsFoodList;
-	private ObservableList<FoodItem> obsMealList;
+	private List<FoodItem> foodList;
+	//private ObservableList<FoodItem> obsMealList;
 
 	@Override
 	public void start(Stage primaryStage) {
-      food = new FoodData();
-      food.loadFoodItems("foodItems.csv");
+		food = new FoodData();
+		food.loadFoodItems("foodItems.csv");
+		food.getAllFoodItems();
+		
+
 		try {
+
 			BorderPane rootContainer = new BorderPane();
-			Scene scene = new Scene(rootContainer,1200,600);
+			Scene scene = new Scene(rootContainer,1500,900);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			String windowTitle = "Meal Planner";
 			primaryStage.setTitle(windowTitle);
@@ -119,9 +126,14 @@ public class Main extends Application {
 			addFoodLabel.setFont(Font.font(addFoodLabel.getFont().toString(),FontWeight.BOLD,14));
 			addFoodLabel.setUnderline(true);
 
-			addFoodButton.setOnAction(a -> {createFoodItem(idField.getText(),nameField.getText(),
+			addFoodButton.setOnAction(a -> {
+				FoodItem newFood = createFoodItem(idField.getText(),nameField.getText(),
 					calField.getText(),fatField.getText(),carbField.getText(),proteinField.getText(),
-					fiberField.getText());});
+					fiberField.getText());
+				obsFoodList.add(newFood);
+				foodList.add(newFood);
+				foodTable.refresh();
+				});
 
 			//grid for adding food
 			GridPane foodPane = new GridPane();
@@ -172,33 +184,48 @@ public class Main extends Application {
 			mealLabel.setFont(Font.font(mealLabel.getFont().toString(),FontWeight.BOLD,14));
 			mealLabel.setUnderline(true);
 
-            // food list
-			
-            List<FoodItem> foodList = food.getAllFoodItems();
-            obsFoodList = FXCollections.observableArrayList(foodList);
-            foodTable = new TableView<FoodItem>(obsFoodList);
-            
-            TableColumn<FoodItem,String> nameColumn = new TableColumn<FoodItem,String>("Name");
-            nameColumn.setCellValueFactory(nameData -> new ReadOnlyStringWrapper(nameData.getValue().getName()));
-            
-            TableColumn<FoodItem,String> caloriesColumn = new TableColumn<FoodItem,String> ("Calories");
-            caloriesColumn.setCellValueFactory(calData -> new ReadOnlyObjectWrapper<Object>(new Double(calData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))));
-            
-            TableColumn<FoodItem,String> fatColumn = new TableColumn<FoodItem,String> ("Fat");
-            
-            TableColumn<FoodItem,String> carbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
-            
-            TableColumn<FoodItem,String> proteinColumn = new TableColumn<FoodItem,String> ("Protein");
-            
-            TableColumn<FoodItem,String> fiberColumn = new TableColumn<FoodItem,String> ("Fiber");
-            
-            foodTable.getColumns().setAll(nameColumn, caloriesColumn);
-            foodTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
+			// food list
+
+			//List<FoodItem> foodList = food.getAllFoodItems();
+			obsFoodList = FXCollections.observableArrayList(foodList);
+			foodTable = new TableView<FoodItem>(obsFoodList);
+
+			TableColumn<FoodItem,String> nameColumn = new TableColumn<FoodItem,String>("Name");
+			nameColumn.setCellValueFactory(nameData -> new ReadOnlyStringWrapper(nameData.getValue().getName()));
+
+			TableColumn<FoodItem,String> caloriesColumn = new TableColumn<FoodItem,String> ("Calories");
+			caloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> fatColumn = new TableColumn<FoodItem,String> ("Fat");
+			fatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> carbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
+			carbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> proteinColumn = new TableColumn<FoodItem,String> ("Protein");
+			proteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> fiberColumn = new TableColumn<FoodItem,String> ("Fiber");
+			fiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			foodTable.getColumns().setAll(nameColumn, caloriesColumn, fatColumn, carbohydratesColumn, proteinColumn, fiberColumn);
+			foodTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
 
 			// add and remove buttons
 			GridPane buttonPane = new GridPane();
 			buttonPane.setGridLinesVisible(false);
 			buttonPane.setAlignment(Pos.CENTER);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 
 			Image addFoodToMealImage = new Image(new File("addFoodToMealIcon.png").toURI().toString(), 40, 40, true, true);
 			Image removeFoodFromMealImage = new Image(new File("removeFoodFromMealIcon.png").toURI().toString(), 40, 40, true, true);
@@ -207,9 +234,6 @@ public class Main extends Application {
 			addFoodToMeal.setTooltip(new Tooltip("Add Food from Food List to Meal List"));
 			addFoodToMeal.setMinWidth(40);
 			addFoodToMeal.setGraphic(new ImageView(addFoodToMealImage));
-			/*addFoodToMeal.setOnAction(a -> {
-			  if 
-			}*/
 
 			Button removeFoodFromMeal = new Button();
 			removeFoodFromMeal.setTooltip(new Tooltip("Remove Food from Meal List"));
@@ -219,36 +243,62 @@ public class Main extends Application {
 			buttonPane.add(addFoodToMeal, 0, 0);
 			buttonPane.add(removeFoodFromMeal, 1, 0);
 			buttonPane.setHgap(20);
-			
+
+
+
 			// meal list
 			TableView<FoodItem> mealTable = new TableView<FoodItem>();
-			
-            TableColumn<FoodItem,String> mealNameColumn = new TableColumn<FoodItem,String>("Name");
-            nameColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("name"));
-            
-            TableColumn<FoodItem,String> mealCaloriesColumn = new TableColumn<FoodItem,String> ("Calories");
-            caloriesColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("calories"));
-            
-            TableColumn<FoodItem,String> mealFatColumn = new TableColumn<FoodItem,String> ("Fat");
-            fatColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("fat"));
-            
-            TableColumn<FoodItem,String> mealCarbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
-            carbohydratesColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("carbohydrate"));
-            
-            TableColumn<FoodItem,String> mealProteinColumn = new TableColumn<FoodItem,String> ("Protein");
-            proteinColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("protein"));
-            
-            TableColumn<FoodItem,String> mealFiberColumn = new TableColumn<FoodItem,String> ("Fiber");
-            fiberColumn.setCellValueFactory(new PropertyValueFactory<FoodItem,String>("fiber"));
-            
+
+			TableColumn<FoodItem,String> mealNameColumn = new TableColumn<FoodItem,String>("Name");
+			mealNameColumn.setCellValueFactory(nameData -> new ReadOnlyStringWrapper(nameData.getValue().getName()));
+
+			TableColumn<FoodItem,String> mealCaloriesColumn = new TableColumn<FoodItem,String> ("Calories");
+			mealCaloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> mealFatColumn = new TableColumn<FoodItem,String> ("Fat");
+			mealFatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> mealCarbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
+			mealCarbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> mealProteinColumn = new TableColumn<FoodItem,String> ("Protein");
+			mealProteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
+			TableColumn<FoodItem,String> mealFiberColumn = new TableColumn<FoodItem,String> ("Fiber");
+			mealFiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+
 			mealTable.getColumns().addAll(mealNameColumn, mealCaloriesColumn, mealFatColumn,
 					mealCarbohydratesColumn, mealProteinColumn, mealFiberColumn);
 			mealTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
-            
+			
+			
+			
+			
+			
+			
+			addFoodToMeal.setOnAction(a -> {
+				FoodItem selectedFood = foodTable.getSelectionModel().getSelectedItem();
+				mealTable.getItems().add(selectedFood);
+				mealList.add(selectedFood);
+				System.out.println(mealList);
+				mealTable.refresh();
+			});
+			
+			
+			removeFoodFromMeal.setOnAction(a -> {
+				FoodItem selectedFood = mealTable.getSelectionModel().getSelectedItem();
+				mealTable.getItems().remove(selectedFood);
+				mealList.remove(selectedFood);
+				System.out.println(mealList);
+				mealTable.refresh();
+			});
+			
+
 			vBox.getChildren().addAll(availableFoodsLabel,foodTable, buttonPane, mealLabel, mealTable);
 			vBox.setPadding(new Insets(10, 0, 0, 10));
 			vBox.setSpacing(5);
 			rootContainer.setCenter(vBox);
+
 
 			// right pane
 			// initialize strings
@@ -299,31 +349,43 @@ public class Main extends Application {
 			// filters list view
 			ListView<String> filtersList  = new ListView<String>();
 			filtersList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-			/*
+
+			ArrayList<String> nutrientFilterList = new ArrayList<String>();
+			
 			addNameFilterButton.setOnAction(a -> {
 				if (!nameFilterInputBox.getText().equals("")){
 					String nameFilterText=nameFilterInputBox.getText();
 					//System.out.println(oldNameFilter.isEmpty());
 					if (oldNameFilter!=null){
-						System.out.println(oldNameFilter);
+						//System.out.println(oldNameFilter);
 						filtersList.getItems().remove("Name Filter: "+oldNameFilter);
 					}
 					filtersList.getItems().add("Name Filter: "+nameFilterText);
-					food.filterByName(nameFilterText);	
+					//food.filterByName(nameFilterText);
+					food.getAllFoodItems().retainAll(food.filterByName(nameFilterText));
+					food.getAllFoodItems().retainAll(food.filterByNutrients(nutrientFilterList));
+					//food.filterByName(nameFilterText).retainAll(food.filterByNutrients(nutrientFilterList));
 					nameFilterInputBox.clear();
 					oldNameFilter=nameFilterText;
+					
 				}
-			});*/
+			});
 
-			ArrayList<String> nutrientFilterList = new ArrayList<String>(); 
-
+			 
 			addNutrientFilterButton.setOnAction(a -> {
-				if (!addNutrientFilterButton.getText().equals("")){
+				if (isValidNutrientFilter(nutrientFilterInputBox.getText())){
 					String nutrientFilter = nutrientFilterInputBox.getText();
 					filtersList.getItems().add(nutrientFilter);
 					nutrientFilterList.add(nutrientFilter);
-					food.filterByNutrients(nutrientFilterList);
+					food.getAllFoodItems().retainAll(food.filterByName(oldNameFilter));
+					food.getAllFoodItems().retainAll(food.filterByNutrients(nutrientFilterList));
+					//food.filterByNutrients(nutrientFilterList).retainAll(food.filterByName(oldNameFilter));
+					for (int i=0; i<food.foodItemList.size();i++) {
+						//System.out.println(food.foodItemList.size());
+			        	System.out.println((String) food.foodItemList.get(i).getName());
+			        }
 					nutrientFilterInputBox.clear();
+					foodTable.refresh();
 				}
 			});
 
@@ -332,8 +394,14 @@ public class Main extends Application {
 			removeFilterButton.setOnAction(a -> {
 				ObservableList<String> selectedList = filtersList.getSelectionModel().getSelectedItems();
 				filtersList.getItems().removeAll(selectedList);
+				foodTable.refresh();
 			}
 					);
+			
+			Button clearMealButton = new Button("Clear Meal");
+			clearMealButton.setOnAction(a -> {mealTable.getItems().clear();}
+			);
+			
 
 			// create child layout containers
 			HBox nameFilterHbox = new HBox(10, nameFilterLabel, nameFilterInputBox);
@@ -341,24 +409,75 @@ public class Main extends Application {
 
 			HBox nutFilterHbox = new HBox(10, nutrientFilterLabel, nutrientFilterInputBox);
 			nutFilterHbox.setAlignment(Pos.CENTER_LEFT);
-			
+
 
 			// Create parent layout container
 			VBox rightTopVbox = new VBox(10, filterLabel, nameFilterHbox,addNameFilterButton, nutFilterHbox, addNutrientFilterButton);
-			VBox rightBottomVbox = new VBox(10,activeFiltersLabel, filtersList, removeFilterButton, analyzeMealButton);
+			VBox rightBottomVbox = new VBox(10,activeFiltersLabel, filtersList, removeFilterButton, analyzeMealButton,clearMealButton);
 			VBox rightPane = new VBox(75,rightTopVbox,rightBottomVbox);
 			rightPane.setAlignment(Pos.TOP_RIGHT);
 			rightPane.setPadding(new Insets(10));
 			rootContainer.setRight(rightPane);
-			
+
+
 			primaryStage.setScene(scene);
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}//start
+	
+	/**
+	 * Evaluates one nutrient filter string to determine if it is valid
+	 * @param S - string representing the nutrient filter
+	 * @return true if filter string is valid, false otherwise
+	 */
+	private boolean isValidNutrientFilter(String S) {
+		if (S == null) return false;
+		
+		String del = " ";
+		
+		String[] FilterPcs = S.split(del);
+		if (FilterPcs.length != 3) return false;
+		
+		//check that nutrient name is valid
+		String nutrientName = FilterPcs[0];
+		boolean isValidNutrient = false;
+        for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
+    		if(nutrient.toString().equals(FilterPcs[0].toLowerCase())) {
+    			isValidNutrient = true;
+    			nutrientName = FilterPcs[0].toLowerCase();
+    			break;
+    		}
+        }
+        if(!isValidNutrient) {return false;}
+		
+		//check that comparator is valid
+		String comparator = FilterPcs[1];
+		String [] comparators = {"==","<=",">="};
+        boolean isValidComparator = false;
+        for(String currentComp : comparators) {
+        	if(currentComp.equals(FilterPcs[1])) {
+        		comparator = FilterPcs[1];
+        		isValidComparator = true;
+        		break;
+        	}
+        }
+        if(!isValidComparator) {return false;}
+		
+		//check that value is valid
+		try {
+			Double nutrientVal = Double.parseDouble(FilterPcs[2]);
+			if (nutrientVal < 0.0d) return false;
+		} catch (Exception E) {
+			return false;
+		}
+		
+		// all checks passed
+		return true;
 	}
 
-	private void createFoodItem(String ID, String name, String calories,
+	private FoodItem createFoodItem(String ID, String name, String calories,
 			String fat, String carbs,String protein,String fiber) {
 
 		Double doubleCalories = null;
@@ -378,7 +497,9 @@ public class Main extends Application {
 			Alert badFood = new Alert(AlertType.WARNING, "Please review your food");
 			badFood.showAndWait().filter(response -> response == ButtonType.OK);
 		}
-
+		
+		
+		
 		if (doubleCalories!=null && doubleFat!=null && doubleCarbs!=null 
 				&& doubleProtein!=null && doubleFiber!=null) {
 			FoodItem foodItemObj = new FoodItem(ID, name);
@@ -392,13 +513,17 @@ public class Main extends Application {
 			//System.out.println(food);
 			//System.out.println(foodItemObj);
 			food.addFoodItem(foodItemObj);
+			return foodItemObj;
 			//System.out.println(foodItemObj);
 
 		}
+		return null;
 	}
+	
+	
 
 	public static void main(String[] args) {
-	  launch(args);
+		launch(args);
 	}
 }
 
