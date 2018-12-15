@@ -301,6 +301,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	        // value must be valid
 	        try {
 	        	nutrientVal = Double.parseDouble(currentRulePcs[2]);
+	        	if(nutrientVal < 0) {continue;}
 	        } catch(Exception e) {continue;}
 	        
 	        // all values must exist
