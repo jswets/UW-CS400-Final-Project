@@ -137,6 +137,11 @@ public class FoodData implements FoodDataADT<FoodItem> {
     public void addFoodItem(FoodItem foodItem) {
     	if(foodItem == null) {return;}
     	
+    	if(foodItem.getID() == null) {return;}
+    	if(foodItem.getID().length() <= 0) {return;}
+    	if(foodItem.getName() == null) {return;}
+    	if(foodItem.getName().length() <= 0) {return;}
+    	
     	// need to add foodItem to all of the relevant BPTrees (name, ID, nutrient indexes)
     	foodIDIx.insert(foodItem.getID(), foodItem);
     	
