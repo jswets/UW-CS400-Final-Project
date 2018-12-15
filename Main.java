@@ -298,6 +298,7 @@ public class Main extends Application {
 					nutrientFilterList.add(nutrientFilter);
 					food.filterByNutrients(nutrientFilterList);
 					nutrientFilterInputBox.clear();
+					foodTable.refresh();
 				}
 			});
 
@@ -306,6 +307,7 @@ public class Main extends Application {
 			removeFilterButton.setOnAction(a -> {
 				ObservableList<String> selectedList = filtersList.getSelectionModel().getSelectedItems();
 				filtersList.getItems().removeAll(selectedList);
+				foodTable.refresh();
 			}
 					);
 
