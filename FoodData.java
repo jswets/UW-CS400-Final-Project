@@ -273,7 +273,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	    	// 2 - <value> - a double value
 			
 			// rule must follow above format
-			if (currentRulePcs.length != 2) {continue;}
+			if (currentRulePcs.length != 3) {continue;}
     		
 			// rule must be for valid nutrient
     		boolean isValidNutrient = false;
