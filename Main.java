@@ -1,5 +1,6 @@
 package application;
 	
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,14 @@ import javafx.stage.FileChooser;
 
 
 public class Main extends Application {
+	private FoodData food;
+	private String oldNameFilter;
+	
 	@Override
 	public void start(Stage primaryStage) {
+		food = new FoodData();
+		food.loadFoodItems("fooditems.csv");
+		
 		try {
 			
 			BorderPane rootContainer = new BorderPane();
@@ -72,14 +79,14 @@ public class Main extends Application {
             String saveFoodListText = "Save Foods to File";
             TextField filePathSaveBox = new TextField();
             filePathSaveBox.setPromptText(inputFilePathInputBoxText);
-            String filePathOutputBoxInputtedText = filePathSaveBox.getText();
             Button saveFoodFileButton = new Button(saveFoodListText);
+            String filePathSaveInputPath = filePathSaveBox.getText();
+            saveFoodFileButton.setOnAction(e -> {food.saveFoodItems(filePathSaveInputPath);});
             
             Label saveFoodFileLabel = new Label(saveFoodListText); 
             
             
-            
-            
+       
             
 	        
             
@@ -123,7 +130,9 @@ public class Main extends Application {
             addFoodLabel.setFont(Font.font(addFoodLabel.getFont().toString(),FontWeight.BOLD,14));
             addFoodLabel.setUnderline(true);
             
-            //addFoodButton.setOnAction(e -> )///METHOD FOR ADDING FOOD TO FOOD LIST
+            addFoodButton.setOnAction(a -> {createFoodItem(idField.getText(),nameField.getText(),
+            		calField.getText(),fatField.getText(),carbField.getText(),proteinField.getText(),
+            		fiberField.getText());});
             
             //grid for adding food
             GridPane foodPane = new GridPane();
@@ -217,6 +226,7 @@ public class Main extends Application {
             TableView mealTable = new TableView();
             mealTable.getColumns().addAll(nameColumn, caloriesColumn, fatColumn,
                 carbohydratesColumn, proteinColumn, fiberColumn);
+            
             mealTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
             
             vBox.getChildren().addAll(availableFoodsLabel,foodTable, buttonPane, mealLabel, mealTable);
@@ -297,21 +307,49 @@ public class Main extends Application {
             filtersList.setFixedCellSize(30);
             filtersList.getItems().addAll("First Filter", "Second Filter", "Third Filter");*/
             
-			
-            System.out.println("["+nameFilterInputBox.getText()+"]");
+            
+        	
+           
+            
             addNameFilterButton.setOnAction(a -> {
-            	if (!nameFilterInputBox.getText().equals("")) filtersList.getItems().add(nameFilterInputBox.getText());
-            	nameFilterInputBox.clear();});
+            	if (!nameFilterInputBox.getText().equals("")){
+            		String nameFilterText=nameFilterInputBox.getText();
+            		//System.out.println(oldNameFilter.isEmpty());
+            		if (oldNameFilter!=null){
+            			System.out.println(oldNameFilter);
+            			filtersList.getItems().remove("Name Filter: "+oldNameFilter);
+            		}
+            		filtersList.getItems().add("Name Filter: "+nameFilterText);
+            		food.filterByName(nameFilterText);	
+            		nameFilterInputBox.clear();
+            		oldNameFilter=nameFilterText;
+            		}
+            	}
+            );
+            
+            ArrayList<String> nutrientFilterList = new ArrayList<String>(); 
             
             addNutrientFilterButton.setOnAction(a -> {
-            	if (!addNutrientFilterButton.getText().equals("")) filtersList.getItems().add(nutrientFilterInputBox.getText());
-            	nutrientFilterInputBox.clear();});
+            	if (!addNutrientFilterButton.getText().equals("")){
+            		String nutrientFilter = nutrientFilterInputBox.getText();
+            		filtersList.getItems().add(nutrientFilter);
+            		nutrientFilterList.add(nutrientFilter);
+            		food.filterByNutrients(nutrientFilterList);
+            		nutrientFilterInputBox.clear();
+            		}
+            	}
+            );
             
             filtersList.setFixedCellSize(30);
             //filtersList.getItems().addAll();
             
             
-            
+            removeFilterButton.setOnAction(a -> {
+            	int selectedIdx = filtersList.getSelectionModel().getSelectedIndex();
+            	filtersList.getSelectionModel().getSelectedItem();
+            	filtersList.getItems().remove(selectedIdx);
+            	}
+            );
             
             
             
@@ -341,11 +379,52 @@ public class Main extends Application {
 		}
 	}
 	
-
+	private void createFoodItem(String ID, String name, String calories,
+			String fat, String carbs,String protein,String fiber) {
+		
+		Double doubleCalories = null;
+		Double doubleFat = null;
+		Double doubleCarbs = null;
+		Double doubleProtein = null;
+		Double doubleFiber = null;
+		
+		try {
+			doubleCalories=Double.parseDouble(calories);
+			doubleFat=Double.parseDouble(fat);
+			doubleCarbs=Double.parseDouble(carbs);
+			doubleProtein=Double.parseDouble(protein);
+			doubleFiber=Double.parseDouble(fiber);
+		}
+		catch(Exception e) {
+			Alert badFood = new Alert(AlertType.WARNING, "Please review your food");
+			badFood.showAndWait().filter(response -> response == ButtonType.OK);
+		}
+		
+		if (doubleCalories!=null && doubleFat!=null && doubleCarbs!=null 
+				&& doubleProtein!=null && doubleFiber!=null) {
+			FoodItem foodItemObj = new FoodItem(ID, name);
+			foodItemObj.addNutrient("calories",doubleCalories);
+			foodItemObj.addNutrient("fat",doubleFat);
+			foodItemObj.addNutrient("carbohydrate",doubleCarbs);
+			foodItemObj.addNutrient("protein",doubleProtein);
+			foodItemObj.addNutrient("fiber",doubleFiber);
+			System.out.println(ID);
+			System.out.println(name);
+			System.out.println(food);
+			System.out.println(foodItemObj);
+			//System.out.println(foodItemObj);
+			food.addFoodItem(foodItemObj);
+			System.out.println(foodItemObj);
+			
+		}
+		
+		
+	}
+	
+	
+	
 	
 	public static void main(String[] args) {
-		//FoodData food = new FoodData();
-		//food.loadFoodItems("fooditems.csv");
 		launch(args);
 	}
 }
