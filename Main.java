@@ -286,6 +286,7 @@ public class Main extends Application {
 					food.filterByName(nameFilterText);	
 					nameFilterInputBox.clear();
 					oldNameFilter=nameFilterText;
+					foodTable.refresh();
 				}
 			});
 
