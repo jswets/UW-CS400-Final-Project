@@ -68,6 +68,8 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
 				!comparator.contentEquals("<=") )
 			return new ArrayList<V>();
 
+		if (root == null) return new ArrayList<V>();
+		
 		return root.rangeSearch(key, comparator);
 	}
 
