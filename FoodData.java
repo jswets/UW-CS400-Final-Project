@@ -228,7 +228,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
     @Override
     public List<FoodItem> getAllFoodItems() {
     	List<FoodItem> retFoods = foodItemList.stream()
-    			.sorted((food1, food2) -> food1.getName().compareTo(food2.getName()))
+    			.sorted((food1, food2) -> food1.getName().toLowerCase().compareTo(food2.getName().toLowerCase()))
 				.collect(Collectors.toList());
     	foodItemList = retFoods;
         return foodItemList;
@@ -331,7 +331,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
     	
     	retList.addAll(rulePassFoodItemsSet);
     	List<FoodItem> retListSorted = retList.stream()
-    			.sorted((food1, food2) -> food1.getName().compareTo(food2.getName()))
+    			.sorted((food1, food2) -> food1.getName().toLowerCase().compareTo(food2.getName().toLowerCase()))
 				.collect(Collectors.toList());
         return retListSorted;
     }
