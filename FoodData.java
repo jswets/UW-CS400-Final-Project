@@ -253,10 +253,10 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> filterByNutrients(List<String> rules) {
-    	List<FoodItem> ret = new ArrayList<FoodItem>();
-    	if(rules == null) {return ret;}
+    	List<FoodItem> retList = new ArrayList<FoodItem>();
+    	if(rules == null) {return retList;}
     	
-    	HashSet<FoodItem> rulePassFoodItems = new HashSet<FoodItem>(getAllFoodItems());
+    	HashSet<FoodItem> rulePassFoodItemsSet = new HashSet<FoodItem>(getAllFoodItems());
     	
     	for(String currentRule : rules) {
     		if(currentRule == null) {continue;}
@@ -312,16 +312,19 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	        
 	        // at this point, all pieces of the rule are valid
 	        // get list of foodItems that qualify for the filter
-	        rulePassFoodItems.retainAll(indexes.get(nutrientName).rangeSearch(nutrientVal, comparator));
+	        rulePassFoodItemsSet.retainAll(indexes.get(nutrientName).rangeSearch(nutrientVal, comparator));
 	        
 	        // short circuit
-	        if(rulePassFoodItems.isEmpty()) {return ret;}
+	        if(rulePassFoodItemsSet.isEmpty()) {return retList;}
     	}
     	
-    	if(rulePassFoodItems.isEmpty()) {return ret;}
+    	if(rulePassFoodItemsSet.isEmpty()) {return retList;}
     	
-    	ret.addAll(rulePassFoodItems);
-        return ret;
+    	retList.addAll(rulePassFoodItemsSet);
+    	List<FoodItem> retListSorted = retList.stream()
+    			.sorted((food1, food2) -> food1.getName().compareTo(food2.getName()))
+				.collect(Collectors.toList());
+        return retListSorted;
     }
 	
 	
