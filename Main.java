@@ -566,12 +566,6 @@ public class Main extends Application {
     }
         );
 
-
-
-    Button clearMealButton = new Button("Clear Meal");
-    clearMealButton.setOnAction(a -> {mealTable.getItems().clear();}
-        );
-
     // create child layout containers
     HBox nameFilterHbox = new HBox(10, nameFilterLabel, nameFilterInputBox);
     nameFilterHbox.setAlignment(Pos.CENTER_LEFT);
@@ -583,7 +577,7 @@ public class Main extends Application {
     VBox rightTopVbox = new VBox(10, filterLabel, nameFilterHbox,addNameFilterButton,
         nutFilterHbox, addNutrientFilterButton);
     VBox rightBottomVbox = new VBox(10,activeFiltersLabel, filtersList, 
-        removeFilterButton, clearMealButton);
+        removeFilterButton);
 
     rightPane.getChildren().addAll(rightTopVbox, rightBottomVbox);
 
