@@ -4,6 +4,7 @@ package application;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +41,16 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.StringConverter;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+
 
 
 public class Main extends Application {
@@ -59,13 +66,12 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		food = new FoodData();
 		food.loadFoodItems("foodItems.csv");
-		food.getAllFoodItems();
 		
 
 		try {
 
 			BorderPane rootContainer = new BorderPane();
-			Scene scene = new Scene(rootContainer,1500,900);
+			Scene scene = new Scene(rootContainer,1200,800);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			String windowTitle = "Meal Planner";
 			primaryStage.setTitle(windowTitle);
@@ -84,6 +90,22 @@ public class Main extends Application {
 
 			String filePathInputBoxInputtedText = inputFilePathInputBox.getText();
 			Button loadFoodButton = new Button(loadFoodButtonText);
+			loadFoodButton.setOnAction(a -> {
+			  FileChooser fc = new FileChooser();
+			  fc.setTitle("Open Food File");
+			  fc.getExtensionFilters().addAll(
+			      new ExtensionFilter("CSV Files", "*.csv"),
+			      new ExtensionFilter("Text Files", "*.txt"),
+			      new ExtensionFilter("All Files","*.*"));
+			  File selectedFile = fc.showOpenDialog(primaryStage);
+			  if (selectedFile != null) {
+			    food = new FoodData();
+			    food.loadFoodItems(selectedFile.getAbsolutePath());
+		        foodList.clear();
+		        obsFoodList.clear();
+		        mealList.clear();
+			  }
+			});
 
 			//middle left
 			String saveFoodListText = "Save Foods to File";
@@ -127,13 +149,23 @@ public class Main extends Application {
 			addFoodLabel.setUnderline(true);
 
 			addFoodButton.setOnAction(a -> {
-				FoodItem newFood = createFoodItem(idField.getText(),nameField.getText(),
+				createFoodItem(idField.getText(),nameField.getText(),
 					calField.getText(),fatField.getText(),carbField.getText(),proteinField.getText(),
 					fiberField.getText());
-				obsFoodList.add(newFood);
-				foodList.add(newFood);
+				foodList = food.getAllFoodItems();
+				obsFoodList = FXCollections.observableArrayList(foodList);
+				for (FoodItem current : foodList) {
+				  System.out.println(current.getName());
+				}
 				foodTable.refresh();
-				});
+				idField.clear();
+				nameField.clear();
+				calField.clear();
+				fatField.clear();
+				carbField.clear();
+				proteinField.clear();
+				fiberField.clear();
+			});
 
 			//grid for adding food
 			GridPane foodPane = new GridPane();
@@ -186,7 +218,7 @@ public class Main extends Application {
 
 			// food list
 
-			//List<FoodItem> foodList = food.getAllFoodItems();
+			foodList = food.getAllFoodItems();
 			obsFoodList = FXCollections.observableArrayList(foodList);
 			foodTable = new TableView<FoodItem>(obsFoodList);
 
@@ -194,19 +226,19 @@ public class Main extends Application {
 			nameColumn.setCellValueFactory(nameData -> new ReadOnlyStringWrapper(nameData.getValue().getName()));
 
 			TableColumn<FoodItem,String> caloriesColumn = new TableColumn<FoodItem,String> ("Calories");
-			caloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			caloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.CALORIES.toString()))).toString()));
 
 			TableColumn<FoodItem,String> fatColumn = new TableColumn<FoodItem,String> ("Fat");
-			fatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			fatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.FAT.toString()))).toString()));
 
 			TableColumn<FoodItem,String> carbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
-			carbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			carbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.CARBOHYDRATE.toString()))).toString()));
 
 			TableColumn<FoodItem,String> proteinColumn = new TableColumn<FoodItem,String> ("Protein");
-			proteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			proteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.PROTEIN.toString()))).toString()));
 
 			TableColumn<FoodItem,String> fiberColumn = new TableColumn<FoodItem,String> ("Fiber");
-			fiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			fiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.FIBER.toString()))).toString()));
 
 			foodTable.getColumns().setAll(nameColumn, caloriesColumn, fatColumn, carbohydratesColumn, proteinColumn, fiberColumn);
 			foodTable.setColumnResizePolicy(foodTable.CONSTRAINED_RESIZE_POLICY);
@@ -253,19 +285,19 @@ public class Main extends Application {
 			mealNameColumn.setCellValueFactory(nameData -> new ReadOnlyStringWrapper(nameData.getValue().getName()));
 
 			TableColumn<FoodItem,String> mealCaloriesColumn = new TableColumn<FoodItem,String> ("Calories");
-			mealCaloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			mealCaloriesColumn.setCellValueFactory(calData -> new ReadOnlyStringWrapper((new Double(calData.getValue().getNutrientValue(NutrientsEnum.CALORIES.toString()))).toString()));
 
 			TableColumn<FoodItem,String> mealFatColumn = new TableColumn<FoodItem,String> ("Fat");
-			mealFatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			mealFatColumn.setCellValueFactory(fatData -> new ReadOnlyStringWrapper((new Double(fatData.getValue().getNutrientValue(NutrientsEnum.FAT.toString()))).toString()));
 
 			TableColumn<FoodItem,String> mealCarbohydratesColumn = new TableColumn<FoodItem,String> ("Carbohydrates");
-			mealCarbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			mealCarbohydratesColumn.setCellValueFactory(carbData -> new ReadOnlyStringWrapper((new Double(carbData.getValue().getNutrientValue(NutrientsEnum.CARBOHYDRATE.toString()))).toString()));
 
 			TableColumn<FoodItem,String> mealProteinColumn = new TableColumn<FoodItem,String> ("Protein");
-			mealProteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			mealProteinColumn.setCellValueFactory(proData -> new ReadOnlyStringWrapper((new Double(proData.getValue().getNutrientValue(NutrientsEnum.PROTEIN.toString()))).toString()));
 
 			TableColumn<FoodItem,String> mealFiberColumn = new TableColumn<FoodItem,String> ("Fiber");
-			mealFiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.calories.toString()))).toString()));
+			mealFiberColumn.setCellValueFactory(fiberData -> new ReadOnlyStringWrapper((new Double(fiberData.getValue().getNutrientValue(NutrientsEnum.FIBER.toString()))).toString()));
 
 			mealTable.getColumns().addAll(mealNameColumn, mealCaloriesColumn, mealFatColumn,
 					mealCarbohydratesColumn, mealProteinColumn, mealFiberColumn);
@@ -345,6 +377,16 @@ public class Main extends Application {
 
 			// Analyze Meal Button
 			Button analyzeMealButton = new Button(analyzeMealButtonText);
+			analyzeMealButton.setOnAction(e -> { 
+              Stage popupStage = new Stage();
+              popupStage.initModality(Modality.APPLICATION_MODAL);
+              popupStage.initOwner(primaryStage);
+              popupStage.setTitle("Meal Analysis");
+              Node mealPopup = createMealPopup(mealList);
+              Scene popupScene = new Scene((Parent) mealPopup, 300, 200);
+              popupStage.setScene(popupScene);
+              popupStage.show();
+            });
 
 			// filters list view
 			ListView<String> filtersList  = new ListView<String>();
@@ -380,9 +422,9 @@ public class Main extends Application {
 					food.getAllFoodItems().retainAll(food.filterByName(oldNameFilter));
 					food.getAllFoodItems().retainAll(food.filterByNutrients(nutrientFilterList));
 					//food.filterByNutrients(nutrientFilterList).retainAll(food.filterByName(oldNameFilter));
-					for (int i=0; i<food.foodItemList.size();i++) {
+					for (int i=0; i<food.getAllFoodItems().size();i++) {
 						//System.out.println(food.foodItemList.size());
-			        	System.out.println((String) food.foodItemList.get(i).getName());
+			        	System.out.println((String) food.getAllFoodItems().get(i).getName());
 			        }
 					nutrientFilterInputBox.clear();
 					foodTable.refresh();
@@ -477,7 +519,7 @@ public class Main extends Application {
 		return true;
 	}
 
-	private FoodItem createFoodItem(String ID, String name, String calories,
+	private void createFoodItem(String ID, String name, String calories,
 			String fat, String carbs,String protein,String fiber) {
 
 		Double doubleCalories = null;
@@ -513,14 +555,49 @@ public class Main extends Application {
 			//System.out.println(food);
 			//System.out.println(foodItemObj);
 			food.addFoodItem(foodItemObj);
-			return foodItemObj;
 			//System.out.println(foodItemObj);
 
 		}
-		return null;
+		
 	}
 	
-	
+
+    private Node createMealPopup(List<FoodItem> meal) {
+        VBox mealPopup = new VBox();
+        
+        //grid for analyzing meal
+        GridPane analyzeMealPane = new GridPane();
+        analyzeMealPane.setGridLinesVisible(false);
+        analyzeMealPane.setAlignment(Pos.CENTER);
+        analyzeMealPane.setHgap(5);
+        analyzeMealPane.setVgap(5);
+        analyzeMealPane.setPadding(new Insets(10));
+        
+        Label totalsLabel = new Label("Totals");
+        totalsLabel.setFont(Font.font(totalsLabel.getFont().toString(),FontWeight.BOLD,14));
+        totalsLabel.setUnderline(true);
+        mealPopup.getChildren().add(totalsLabel);
+        
+        // total values for each food in meal, and add to grid pane
+        int row = 0;
+        for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
+            Double nutrientTotal = new Double(0);
+            for(FoodItem foodItemObj : meal) {
+                nutrientTotal = nutrientTotal + foodItemObj.getNutrientValue(nutrient.toString());
+            }
+            
+            Label nutrientLabel = new Label(nutrient.toString());
+            Label nutrientVal = new Label(nutrientTotal.toString());
+            analyzeMealPane.add(nutrientLabel, 0, row);
+            analyzeMealPane.add(nutrientVal, 1, row);
+            row++;
+        }
+        
+        mealPopup.getChildren().add(analyzeMealPane);
+        
+        return mealPopup;
+    }
+
 
 	public static void main(String[] args) {
 		launch(args);
