@@ -1,9 +1,14 @@
 package application;
 
 public enum NutrientsEnum {
-	calories,
-	fat,
-	carbohydrate,
-	fiber,
-	protein
+	CALORIES,
+	FAT,
+	CARBOHYDRATE,
+	FIBER,
+	PROTEIN;
+	
+	@Override
+	public String toString() {
+		return super.toString().toLowerCase();
+	}
 }

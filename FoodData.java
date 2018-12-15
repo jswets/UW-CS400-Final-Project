@@ -88,7 +88,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					FoodItem foodItemObj = new FoodItem(id, name);
 										
 					// add info about each nutrient
-					for(int strIx = 2; strIx < dataLinePcs.length; strIx = strIx + 2) {
+					for(int strIx = 2; strIx < dataLinePcs.length; strIx++) {
 						// only add valid nutrients
 						boolean isValidNutrient = false;
 				        for (NutrientsEnum nutrient : NutrientsEnum.values()) { 
@@ -99,8 +99,17 @@ public class FoodData implements FoodDataADT<FoodItem> {
 				        }
 				        if(!isValidNutrient) {continue;}
 				        
-				        // at this point we have a valid nutrient
-				        foodItemObj.addNutrient(dataLinePcs[strIx], new Double(dataLinePcs[strIx + 1]));
+				        // validate nutrient value
+				        Double nutrientVal = null;
+				        try {
+				        	nutrientVal = Double.parseDouble(dataLinePcs[strIx + 1]);
+				        	if(nutrientVal < 0) {continue;}
+				        } catch(Exception e) {continue;}
+				        
+				        if(nutrientVal == null) {continue;}
+				        
+				        // at this point we have a valid nutrient and value
+				        foodItemObj.addNutrient(dataLinePcs[strIx], nutrientVal);
 					}
 					
 					// add food item
